@@ -15,7 +15,6 @@ PanelWindow {
         anchors.fill: parent
         color: "transparent"
 
-        // --- Simple Button ---
         Rectangle {
             id: button
             width: 7
@@ -27,14 +26,14 @@ PanelWindow {
                 anchors.fill: parent
                 hoverEnabled: true
                 onClicked: {
-                    console.log("You fucking clicked me.")
+                    console.log("Test")
                     
                 }
                 onEntered: {
-                    console.log("Hi Cami!")
+                    console.log("Hi!")
                 }
                 onExited: {
-                    console.log("Bye Cami!")
+                    console.log("Bye!")
                 }
             }
         }
