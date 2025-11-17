@@ -2,6 +2,7 @@ import Quickshell
 import QtQuick
 import QtQuick.Effects
 import qs.modules
+import qs.services as Services
 
 PanelWindow {
     id: topBar
@@ -14,17 +15,22 @@ PanelWindow {
         right: true
     }
 
-    // -------- LEFT --------
+    Services.Power {
+        id: powerSvc
+    }
 
     Row {
         anchors.left: parent.left
         anchors.verticalCenter: parent.verticalCenter
         spacing: 5
         padding: 5
+
         DateTime {}
-        Battery {}
+
+        Battery {
+            visible: powerSvc.hasBattery
         }
-    // ---------- CENTER ---------
+    }
 
     Workspaces {
         id: workspaces
@@ -33,7 +39,4 @@ PanelWindow {
             verticalCenter: parent.verticalCenter
         }
     }
-
-    // --------- RIGHT -------
-
 }
