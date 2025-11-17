@@ -6,10 +6,19 @@ Item {
     id: root
     property int maxWorkspaces: 8
 
-    // --- Sizes (dot/pill logic like example) ---
+    // Sizes 
     property int sizeSmall: 12
-    property int sizeMedium: 14
+    property int sizeMedium: 12
     property int sizeLarge: 28  // focused pill width
+
+    readonly property var occupiedMap: Hyprland.workspaces.values.reduce(
+        (acc, ws) => {
+            const winCount = (ws.lastIpcObject && ws.lastIpcObject.windows) || 0
+            acc[ws.id] = winCount > 0
+            return acc
+        },
+        {}
+    )
 
     implicitWidth: bg.implicitWidth
     implicitHeight: bg.implicitHeight
@@ -35,16 +44,14 @@ Item {
                     id: wsBox
                     property int wid: index + 1
 
-                    // These mirror their prefWidth/prefHeight logic
                     property bool isFocused:
                         Hyprland.focusedWorkspace
                         && Hyprland.focusedWorkspace.id === wid
 
-                    property bool isOccupied: Hyprland.isWorkspaceOccupied(wid)
+                    property bool isOccupied: occupiedMap[wid] === true
 
-                    // --- THEIR METHOD: SIZES COME FROM PROPERTIES ---
+                    // size logic
                     property int prefHeight: 12
-
                     property int prefWidth:
                         isFocused ? root.sizeLarge
                         : isOccupied ? root.sizeMedium
@@ -54,7 +61,6 @@ Item {
                     height: prefHeight
                     radius: prefHeight / 2
 
-                    // --- Smooth width animation like theirs ---
                     Behavior on width {
                         NumberAnimation {
                             duration: 400
@@ -62,25 +68,24 @@ Item {
                         }
                     }
 
+                    // colors based on state
                     property color workspaceStateColor: {
                         if (isFocused)
                             return "#b4befe"
                         if (isOccupied)
-                            return Qt.darker('#ffffff', 1.4)
-                        return "#a2a2a2"
+                            return "#e8e8e8ff"
+                        return "#7a7a7a"
                     }
 
                     color: workspaceStateColor
 
-                    // Border logic (you already had one)
-                    border.width: isOccupied ? 2 : 1
+                    border.width: isOccupied ? 1 : 1
                     border.color: isFocused ? "#b4befe" : "#a2a2a2"
 
                     Behavior on color {
                         ColorAnimation { duration: 150 }
                     }
 
-                    // --- Hover overlay identical to theirs ---
                     property bool hovered: false
 
                     Rectangle {
@@ -91,7 +96,6 @@ Item {
                         Behavior on opacity { NumberAnimation { duration: 150 } }
                     }
 
-                    // --- Bounce animation from your version ---
                     SequentialAnimation {
                         id: bounceAnim
                         running: false
@@ -112,7 +116,6 @@ Item {
                         }
                     }
 
-                    // Mouse handling
                     MouseArea {
                         anchors.fill: parent
                         hoverEnabled: true
