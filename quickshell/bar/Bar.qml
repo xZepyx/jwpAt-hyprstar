@@ -27,9 +27,7 @@ PanelWindow {
 
         DateTime {}
 
-        Battery {
-            visible: powerSvc.hasBattery
-        }
+        Battery {}
     }
 
     Workspaces {
