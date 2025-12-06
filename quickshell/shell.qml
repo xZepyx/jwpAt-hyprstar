@@ -14,7 +14,7 @@ ShellRoot {
     
         Wallpaper {
             screen: modelData
-            imagePath: Quickshell.env("HOME") + "/.config/wallpapers/catppuccin/sunset.jpg"
+            imagePath: Quickshell.env("HOME") + "/.config/quickshell/assets/wallpapers/sunset.jpg"
         }
     }
 
