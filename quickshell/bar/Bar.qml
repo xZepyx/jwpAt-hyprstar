@@ -12,14 +12,21 @@ PanelWindow {
     anchors { top: true; left: true; right: true }
 
     // LEFT
-    Row {
+    RowLayout {
+        id: leftCluster
         anchors.left: parent.left
+        anchors.leftMargin: 6
         anchors.verticalCenter: parent.verticalCenter
+        height: parent.height
         spacing: 6
-        padding: 6
 
-        DateTime {}
-        Battery {}
+        DateTime {
+            Layout.alignment: Qt.AlignVCenter
+        }
+
+        Battery {
+            Layout.alignment: Qt.AlignVCenter
+        }
     }
 
     // CENTER (Workspaces truly centered)
@@ -27,6 +34,7 @@ PanelWindow {
         id: centerCluster
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.verticalCenter: parent.verticalCenter
+        height: parent.height
         spacing: 6
 
         // side slot width = whichever side is wider
@@ -37,8 +45,8 @@ PanelWindow {
             id: leftSlot
             Layout.preferredWidth: centerCluster.sideW
             Layout.minimumWidth: centerCluster.sideW
+            Layout.fillHeight: true
             Layout.alignment: Qt.AlignVCenter
-            height: 1
 
             // pin actual left content to the RIGHT edge of the slot
             Row {
@@ -49,6 +57,7 @@ PanelWindow {
 
                 Memory {}
                 Temperature {}
+
                 Power {
                     powerIcon:    Qt.resolvedUrl("../assets/power_icons/power-1.svg")
                     lockIcon:     Qt.resolvedUrl("../assets/power_icons/lock.svg")
@@ -70,8 +79,8 @@ PanelWindow {
             id: rightSlot
             Layout.preferredWidth: centerCluster.sideW
             Layout.minimumWidth: centerCluster.sideW
+            Layout.fillHeight: true
             Layout.alignment: Qt.AlignVCenter
-            height: 1
 
             // pin actual right content to the LEFT edge of the slot
             Row {
@@ -86,12 +95,16 @@ PanelWindow {
     }
 
     // RIGHT
-    Row {
+    RowLayout {
+        id: rightCluster
         anchors.right: parent.right
+        anchors.rightMargin: 6
         anchors.verticalCenter: parent.verticalCenter
+        height: parent.height
         spacing: 6
-        padding: 6
 
-        Pfppanel {}
+        Pfppanel {
+            Layout.alignment: Qt.AlignVCenter
+        }
     }
 }
