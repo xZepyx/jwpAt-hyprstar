@@ -34,7 +34,6 @@ PanelWindow {
     }
 
     onPageIndexChanged: {
-        // switching pages should not leave an expanded overlay running
         remindersExpanded = false
         weatherExpanded = false
     }
@@ -56,6 +55,12 @@ PanelWindow {
 
     anchors { top: true; left: true }
     margins { top: 6 - shadowPad; left: 6 - shadowPad }
+
+    // ===== padding knobs =====
+    // overall inner padding for the whole content area
+    property int contentPadding: 12
+    // extra gap from the very top (inside padding) down to the TOP of the tab buttons row
+    property int tabsTopGap: -6
 
     Item {
         id: wrap
@@ -87,16 +92,24 @@ PanelWindow {
 
             ColumnLayout {
                 anchors.fill: parent
-                anchors.margins: 12
+                anchors.margins: panel.contentPadding
                 spacing: 12
 
                 // =========================
-                // TOP MENU (labels centered in each half + underline follows slide)
+                // TOP MENU (tabs)
                 // =========================
                 Item {
                     id: topMenu
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 36
+                    Layout.preferredHeight: 30
+
+                    // THIS is the control you asked for:
+                    // distance from the very top of the card content area to the top of the buttons row.
+                    // (It stacks on top of anchors.margins.)
+                    Layout.topMargin: panel.tabsTopGap
+
+                    // tweak if you still want the label to sit perfectly between the top and underline
+                    property int tabLabelVOffset: 1
 
                     RowLayout {
                         id: tabsRow
@@ -118,7 +131,10 @@ PanelWindow {
 
                             Text {
                                 id: dashLabel
-                                anchors.centerIn: parent
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                anchors.verticalCenter: parent.verticalCenter
+                                anchors.verticalCenterOffset: topMenu.tabLabelVOffset
+
                                 text: "Dashboard"
                                 color: panel.pageIndex === 0 ? Theme.Theme.text : Theme.Theme.subText
                                 font.pixelSize: 13
@@ -147,7 +163,10 @@ PanelWindow {
 
                             Text {
                                 id: wallLabel
-                                anchors.centerIn: parent
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                anchors.verticalCenter: parent.verticalCenter
+                                anchors.verticalCenterOffset: topMenu.tabLabelVOffset
+
                                 text: "Wallpapers"
                                 color: panel.pageIndex === 1 ? Theme.Theme.text : Theme.Theme.subText
                                 font.pixelSize: 13
@@ -218,7 +237,6 @@ PanelWindow {
                             width: pageViewport.width
                             height: pageViewport.height
 
-                            // Overlay for REMINDERS expansion only (full-page within this page)
                             Item {
                                 id: overlaySurface
                                 anchors.fill: parent
@@ -256,7 +274,6 @@ PanelWindow {
                                     }
                                 }
 
-                                // RIGHT: non-layout container (so expansions don't fight Layout)
                                 Item {
                                     id: rightRegion
                                     Layout.fillWidth: true
@@ -305,7 +322,6 @@ PanelWindow {
                                     onRequestExpand: panel.weatherExpanded = true
                                     onRequestCollapse: panel.weatherExpanded = false
 
-                                    // only active while visible on page 0 and not blocked by reminders overlay
                                     active: panel.visible && panel.pageIndex === 0 && !panel.remindersExpanded
                                 }
                             }
@@ -332,7 +348,6 @@ PanelWindow {
                                 }
                             }
 
-                            // Reminders state machine (full-page expand)
                             StateGroup {
                                 states: [
                                     State {
@@ -350,7 +365,6 @@ PanelWindow {
                                 ]
                             }
 
-                            // Weather state machine (expand over ENTIRE right side)
                             StateGroup {
                                 states: [
                                     State {
@@ -374,7 +388,6 @@ PanelWindow {
                             id: wallpapersPage
                             width: pageViewport.width
                             height: pageViewport.height
-                            // intentionally empty
                         }
                     }
                 }
