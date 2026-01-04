@@ -156,61 +156,59 @@ PanelWindow {
             spacing: 6
 
             TextField {
-    id: search
-    Layout.fillWidth: true
-    height: 48
+                id: search
+                Layout.fillWidth: true
+                height: 48
 
-    text: panel.query
-    onTextEdited: panel.query = text
+                text: panel.query
+                onTextEdited: panel.query = text
 
-    placeholderText: "Search Applications"
-    font.pixelSize: 15
+                placeholderText: "Search Applications"
+                font.pixelSize: 15
 
-    // Force consistent colors (these override theme palette weirdness)
-    color: Theme.Theme.text
-    placeholderTextColor: Theme.Theme.subText
-    selectionColor: "#45475a"
-    selectedTextColor: Theme.theme.text
-    cursorDelegate: Rectangle {
-        width: 2
-        color: Theme.Theme.accent
-        radius: 1
-    }
+                // Force consistent colors (these override theme palette weirdness)
+                color: Theme.Theme.text
+                placeholderTextColor: Theme.Theme.subText
+                selectionColor: "#45475a"
+                selectedTextColor: Theme.Theme.text
+                cursorDelegate: Rectangle {
+                    width: 2
+                    color: Theme.Theme.accent
+                    radius: 1
+                }
 
-    leftPadding: 14
-    rightPadding: 12
-    topPadding: 12
-    bottomPadding: 12
+                leftPadding: 14
+                rightPadding: 12
+                topPadding: 12
+                bottomPadding: 12
 
-    background: Rectangle {
-        radius: 14
-        color: Theme.Theme.bttnbg
-        border.width: 1
-        border.color: search.activeFocus ? Theme.Theme.accent : Theme.Theme.bttnbg
+                background: Rectangle {
+                    radius: 14
+                    color: Theme.Theme.bttnbg
+                    border.width: 1
+                    border.color: search.activeFocus ? Theme.Theme.accent : Theme.Theme.bttnbg
 
-        Rectangle {
-            anchors.fill: parent
-            anchors.margins: 1
-            radius: 13
-            color: "transparent"
-            border.width: 1
-            border.color: search.activeFocus ? Theme.Theme.accent : Theme.Theme.bttnbg
-        }
-    }
+                    Rectangle {
+                        anchors.fill: parent
+                        anchors.margins: 1
+                        radius: 13
+                        color: "transparent"
+                        border.width: 1
+                        border.color: search.activeFocus ? Theme.Theme.accent : Theme.Theme.bttnbg
+                    }
+                }
 
-    // Make Enter guaranteed while typing
-    Keys.onPressed: (e) => {
-        if (e.key === Qt.Key_Escape) { win.closeLauncher(); e.accepted = true; return; }
-        if (e.key === Qt.Key_Return || e.key === Qt.Key_Enter) { win.launchSelected(); e.accepted = true; return; }
-        if (e.key === Qt.Key_Down) { win.moveSelection(1); e.accepted = true; return; }
-        if (e.key === Qt.Key_Up) { win.moveSelection(-1); e.accepted = true; return; }
-    }
+                // Make Enter guaranteed while typing
+                Keys.onPressed: (e) => {
+                    if (e.key === Qt.Key_Escape) { win.closeLauncher(); e.accepted = true; return; }
+                    if (e.key === Qt.Key_Return || e.key === Qt.Key_Enter) { win.launchSelected(); e.accepted = true; return; }
+                    if (e.key === Qt.Key_Down) { win.moveSelection(1); e.accepted = true; return; }
+                    if (e.key === Qt.Key_Up) { win.moveSelection(-1); e.accepted = true; return; }
+                }
 
-    onAccepted: win.launchSelected()
-}
+                onAccepted: win.launchSelected()
+            }
 
-
-            // List directly in the main panel (no inner box)
             ListView {
                 id: list
                 Layout.fillWidth: true
@@ -219,21 +217,57 @@ PanelWindow {
                 clip: true
 
                 currentIndex: 0
-                highlightFollowsCurrentItem: true
-                highlightMoveDuration: 80
-                highlightResizeDuration: 80
 
-                highlight: Rectangle {
+                // Optional: stop the rubber-band bounce at ends
+                boundsBehavior: Flickable.StopAtBounds
+
+                // Disable built-in highlight
+                highlight: null
+                highlightFollowsCurrentItem: false
+
+                // Sliding highlight that lives INSIDE the scrollable content
+                Rectangle {
+                    id: slideHl
                     radius: 12
                     color: Theme.Theme.accent
+
+                    // Put it behind the delegates so text stays visible
+                    z: -1
+
+                    // Animated target geometry
+                    property real ty: 0
+                    property real th: 44
+
+                    x: 0
+                    width: list.width
+                    y: ty
+                    height: th
+                    visible: list.currentIndex >= 0 && list.currentItem !== null
+
+                    Behavior on ty { NumberAnimation { duration: 140; easing.type: Easing.OutCubic } }
+                    Behavior on th { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
+                    Behavior on width { NumberAnimation { duration: 120; easing.type: Easing.OutCubic } }
+
+                    function syncToCurrent() {
+                        if (!list.currentItem) return;
+                        ty = list.currentItem.y;
+                        th = list.currentItem.height;
+                    }
+
+                    Component.onCompleted: {
+                        // IMPORTANT: move highlight into the scrolling content space
+                        slideHl.parent = list.contentItem;
+                        slideHl.syncToCurrent();
+                    }
                 }
+
+                onCurrentItemChanged: slideHl.syncToCurrent()
 
                 model: ScriptModel {
                     values: {
                         const q = panel.query.trim().toLowerCase();
 
                         const apps = [...DesktopEntries.applications.values];
-
                         let scored = [];
 
                         for (const a of apps) {
@@ -241,15 +275,13 @@ PanelWindow {
                             if (q.length > 0 && m < 0) continue;
 
                             const u = win.usageCount(a.id);
-                            const key = (q.length > 0)
-                                ? (m * 1000000000000 + u)
-                                : u;
+                            const key = (q.length > 0) ? (m * 1000000000000 + u) : u;
 
                             scored.push({ app: a, key: key });
                         }
 
                         scored.sort((x, y) => {
-                            if (x.key !== y.key) return y.key - x.key;
+                        if (x.key !== y.key) return y.key - x.key;
                             return (x.app.name || "").localeCompare(y.app.name || "");
                         });
 
@@ -277,6 +309,8 @@ PanelWindow {
 
                     MouseArea {
                         anchors.fill: parent
+                        hoverEnabled: true
+                        onEntered: list.currentIndex = index
                         onClicked: {
                             list.currentIndex = index;
                             row.run();
@@ -288,7 +322,7 @@ PanelWindow {
                         anchors.leftMargin: 14
                         anchors.rightMargin: 14
                         spacing: 10
-
+            
                         IconImage {
                             width: 22
                             height: 22
