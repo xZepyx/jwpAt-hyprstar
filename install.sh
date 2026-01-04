@@ -18,7 +18,8 @@ cp -r ~/hyprstar/Catppuccin-Mocha-Standard-Blue-Dark ~/.themes/
 
 # enable services
 sudo systemctl disable getty@tty2.service
-sudo systemctl enable ly@tty2.service
+sudo systemctl enable ly@tty2.service bluetooth.service
+sudo systemctl start bluetooth.service
 
 # move configs
 cp -r ~/hyprstar/{hypr,kitty,quickshell,scripts,electron-flags.conf} ~/.config/
