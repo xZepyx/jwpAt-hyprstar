@@ -27,6 +27,9 @@ cp -r ~/hyprstar/{hypr,kitty,quickshell,scripts,electron-flags.conf} ~/.config/
 # make scripts executable
 chmod +x ~/.config/scripts/*.sh
 
+# set theme
+~/.config/scripts/theme-switch.sh Catppuccin
+
 # echo complete
 echo "install complete! Would you like to reboot? (y/n)"
 read -r answer
